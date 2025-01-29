@@ -71,14 +71,17 @@ class Table {
             return;
         }
         // Mark "N/A" for complicated properties.
-        for (var key in this.#dataSet[0]) {
-            if (Array.isArray(this.#dataSet[0][key]) || typeof this.#dataSet[0][key] === 'object' && this.#dataSet[0][key] != null) {
-                this.#dataSet.forEach(item => {
-                    item[key] = "N/A";
-                })
-            }
-        }
-    }
+    //     for (var key in this.#dataSet[0]) {
+    //         if (Array.isArray(this.#dataSet[0][key]) || typeof this.#dataSet[0][key] === 'object' && this.#dataSet[0][key] != null) {
+    //             this.#dataSet.forEach(item => {
+    //                 item[key] = "N/A";
+    //             })
+    //         }
+    //     }
+     }
+
+    
+    
 
     drawTable = () => {
         if (this.#dataSet == null || this.#dataSet.length == 0) {
@@ -88,11 +91,33 @@ class Table {
 
         let columns = [];
         for (var key in this.#dataSet[0]) {
-            columns.push({
-                field: key,
-                title: key,
-                align: "center"
-            })
+
+            if (Array.isArray(this.#dataSet[0][key] && this.#dataSet[0][key] != null)){
+                //value is array 
+                columns.push({
+                    field: key,
+                    title: key,
+                    align: "center",
+                    formatter: function(value) {
+                        return value.toString();
+                    }
+                })
+            }else if( typeof this.#dataSet[0][key] === 'object'  && this.#dataSet[0][key] != null){
+                columns.push({
+                    field: key,
+                    title: key,
+                    align: "center",
+                    formatter: function(value) {
+                        return JSON.stringify(value)
+                    }
+                })
+            }else{
+                columns.push({
+                    field: key,
+                    title: key,
+                    align: "center"
+                })
+            }
         }
         $(this.#tableId).bootstrapTable('destroy');
         $(this.#tableId).bootstrapTable({
