@@ -10,7 +10,9 @@ const { authRefreshMiddleware,
         getIssues,
         getIssueSubtypes,
         getIssueRootcauses,
-        getIssueCustomAttributesDefs } = require('../services/aps.js');
+        getIssueCustomAttributesDefs,
+        createIssues,
+        modifyIssues  } = require('../services/aps.js');
 
 let router = express.Router();
 
@@ -64,7 +66,7 @@ router.post('/api/admin/projects', bodyParser.json(), async function (req, res, 
     res.json({'Succeed':projectsCreated, 'Failed': projectsFailed });
 });
 
-router.get('/api/admin/project/users', async function (req, res, next) {
+router.get('/api/admin/projectUsers', async function (req, res, next) {
     try {
         const users = await getProjectUsersACC(req.query.projectId, req.oAuthToken.access_token);
         res.json(users);
@@ -72,8 +74,8 @@ router.get('/api/admin/project/users', async function (req, res, next) {
         next(err);
     }
 });
- 
-router.get('/api/issues/allIssues', async function(req, res, next){
+
+router.get('/api/issues/issues', async function(req, res, next){
     try {
         const issues = await getIssues(req.query.projectId,req.oAuthToken.access_token);
         res.json(issues);
@@ -81,6 +83,33 @@ router.get('/api/issues/allIssues', async function(req, res, next){
         next(err);
     }
 });
+
+router.post('/api/issues/issues', bodyParser.json(), async function (req, res, next) {
+    //create new issue or modify issue
+    const projectId = req.body.projectId;
+    const issues = req.body.data;
+    const temp =  issues.filter(i=>i.id=='' || i.id ==null || i.id==undefined)
+    const newIssues = temp.map(obj => {
+        const { ['id']: removed, ...rest } = obj; // Destructure and remove the key
+        return rest; // Return the rest of the object without the removed key
+      });
+    const oldIssues =  req.body.data.filter(i=>i.id!='' && i.id !=null && i.id!=undefined)
+ 
+    try {
+        const newIssueResults = await createIssues(projectId,req.oAuthToken.access_token,newIssues);
+        const oldIssueResults = await modifyIssues(projectId,req.oAuthToken.access_token,oldIssues);
+
+        const results = Object.assign({}, newIssueResults, oldIssueResults);
+        res.json(results);
+
+    } catch (err) {
+        next(err);
+    }
+ 
+
+
+});
+ 
 
 router.get('/api/issues/subtypes', async function(req, res, next){
     try {

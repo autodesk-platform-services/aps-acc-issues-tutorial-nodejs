@@ -1,12 +1,24 @@
 const TABLE_TABS = { 
-    'ISSUES': {
-        'REQUEST_URL': '/api/issues/allIssues',
-        'TAB_NAME': 'ISSUES',
-        'VISIBILITY': true
+    ISSUES: {
+        REQUEST_URL: '/api/issues/issues',
+        TAB_NAME: 'ISSUES',
+        VISIBILITY: true, 
+        IMPORT_ATTRIBUTES_KEYS:[
+            'id',
+            'title',
+            'description',
+            'issueSubtypeId',
+            'status',
+            'dueDate',
+            'assignedTo',
+            'assignedToType',
+            'rootCauseId',
+            'published'
+        ]
     },
 
     'USERS': {
-        'REQUEST_URL': '/api/admin/project/users',
+        'REQUEST_URL': '/api/admin/projectUsers',
         'TAB_NAME': 'USERS',
         'VISIBILITY': false
     },
@@ -103,6 +115,8 @@ class Table {
                     }
                 })
             }else if( typeof this.#dataSet[0][key] === 'object'  && this.#dataSet[0][key] != null){
+                //value is JSON object 
+
                 columns.push({
                     field: key,
                     title: key,
@@ -112,6 +126,7 @@ class Table {
                     }
                 })
             }else{
+                //common value
                 columns.push({
                     field: key,
                     title: key,
@@ -167,15 +182,29 @@ class Table {
         csvDataList.push(csvHeader);
         this.#dataSet.forEach((row) => {
             let csvRowItem = [];
+               
+
             for (let key in row) {
-                if (typeof row[key] === 'string')
-                    csvRowItem.push("\"" + row[key].replace(/\"/g, "\"\"").replace("#", "") + "\"")
-                else
+                if(!TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS.includes(key))
+                        continue;
+
+               // if (typeof row[key] === 'string')
+               //     csvRowItem.push("\"" + row[key].replace(/\"/g, "\"\"").replace("#", "") + "\"")
+               // else
+               if( row[key] ==='' ||  row[key] === null ||  row[key] === undefined){
+                csvRowItem.push('')
+               }else if(typeof row[key] === 'object'){
+                    csvRowItem.push(JSON.stringify(row[key]));
+                }else if(Array.isArray(row[key])){
+                    csvRowItem.push(row[key].toString()); 
+                }else{
                     csvRowItem.push(row[key]);
+                }
             }
             csvDataList.push(csvRowItem);
         })
-        let csvString = csvDataList.join("%0A");
+        //let csvString = csvDataList.join("%0A");
+        let csvString = csvDataList.map(row => row.join(',')).join('\n');
         let a = document.createElement('a');
         a.href = 'data:attachment/csv,' + csvString;
         a.target = '_blank';
@@ -185,6 +214,10 @@ class Table {
     }
 
     importFromCSV = async() => {
+        if(TABLE_TABS[this.#tabKey].TAB_NAME != 'ISSUES'){
+            alert('only issue is supported to be created/modified!Please active ISSUES table firstly!');
+            return;
+        }
         let input = document.createElement('input');
         input.type = 'file';
         input.onchange = _ => {
@@ -198,50 +231,22 @@ class Table {
                             return new Promise(resolve => setTimeout(resolve, ms));
                         }
                         $("#loadingoverlay").fadeIn()
-                        const rows = e.target.result.split("\r\n");
+                        const rows = e.target.result.replace(/\r\n/g, '\n').split('\n'); // First replace \r\n with \n, then split by \n
                         const keys = rows[0].split(',');
+                        const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
                         let requestDataList = [];
+
                         for (let i = 1; i < rows.length && i <= this.#maxItem; i++) {
                             let jsonItem = {};
                             let cells = rows[i].split(",");
                             for (let j = 0; j < cells.length; j++) {
-                                if (cells[j] == null || cells[j] == '')
-                                    continue
+                                //if (cells[j] == null || cells[j] == '')
+                                //    continue 
                                 // customize the input property
                                 let key = keys[j];
-                                switch (this.#tabKey) {
-                                    case 'PROJECTS':
-                                        if (key == 'template') {
-                                            jsonItem[key] = { 'projectId': cells[j] };
-                                            continue;
-                                        }
-                                        break;
-                                    case 'PROJECT':
-                                    case 'USERS':
-                                        if (key == 'roleIds') {
-                                            const roleIdList = cells[j].replace(/\s/g, '').split('|');
-                                            jsonItem[key] = roleIdList;
-                                            continue;
-                                        }
-                                        const params = key.split('.')
-                                        const length = params.length;
-                                        if (length == 2 && params[0] == 'products') {
-                                            let productAccess = {
-                                                "key": params[length - 1],
-                                                "access": cells[j]
-                                            }
-                                            if (jsonItem["products"] == null) {
-                                                jsonItem["products"] = [];
-                                            }
-                                            jsonItem["products"].push(productAccess)
-                                            continue
-                                        }
-                                        break;
-                                    default:
-                                        console.warn("The current Admin Data Type is not expected");
-                                        break;
-                                }
-                                jsonItem[key] = cells[j];
+                                if(import_attributes_keys.includes(key))
+                                     jsonItem[key] = cells[j]; 
+                                jsonItem['csvRowNum'] = i;
                             }
                             requestDataList.push(jsonItem);
                         }
@@ -277,32 +282,32 @@ class Table {
 
 export async function refreshTable( accountId = null, projectId=null ) {
     $("#loadingoverlay").fadeIn()
-    if( TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME=='hub' && projectId ){
-        for (let key in TABLE_TABS) {
-            if( TABLE_TABS[key].CATEGORY_NAME == 'hub' ){
-                $("#" + key).addClass("hidden");
-                $("#" + key).removeClass("active");
-            }
-            else{
-                if( TABLE_TABS[key].CATEGORY_DEFAULT )
-                    $("#" + key).addClass("active");
-                $("#" + key).removeClass("hidden");
-            }
-        } 
-    }
-    if (TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME == 'project' && !projectId) {
-        for (let key in TABLE_TABS) {
-            if (TABLE_TABS[key].CATEGORY_NAME == 'hub') {
-                $("#" + key).removeClass("hidden");
-                if (TABLE_TABS[key].CATEGORY_DEFAULT)
-                    $("#" + key).addClass("active");
-            }
-            else {
-                $("#" + key).addClass("hidden");
-                $("#" + key).removeClass("active");
-            }
-        }
-    }
+    // if( TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME=='hub' && projectId ){
+    //     for (let key in TABLE_TABS) {
+    //         if( TABLE_TABS[key].CATEGORY_NAME == 'hub' ){
+    //             $("#" + key).addClass("hidden");
+    //             $("#" + key).removeClass("active");
+    //         }
+    //         else{
+    //             if( TABLE_TABS[key].CATEGORY_DEFAULT )
+    //                 $("#" + key).addClass("active");
+    //             $("#" + key).removeClass("hidden");
+    //         }
+    //     } 
+    // }
+    // if (TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME == 'project' && !projectId) {
+    //     for (let key in TABLE_TABS) {
+    //         if (TABLE_TABS[key].CATEGORY_NAME == 'hub') {
+    //             $("#" + key).removeClass("hidden");
+    //             if (TABLE_TABS[key].CATEGORY_DEFAULT)
+    //                 $("#" + key).addClass("active");
+    //         }
+    //         else {
+    //             $("#" + key).addClass("hidden");
+    //             $("#" + key).removeClass("active");
+    //         }
+    //     }
+    // }
     const activeTab = $("ul#issueTableTabs li.active")[0].id;
     try{
         await g_accDataTable.resetData( activeTab, accountId, projectId );
@@ -317,7 +322,6 @@ export async function initTableTabs(){
     // add all tabs
     for (let key in TABLE_TABS) {
         $('<li id=' + key + '><a href="accTable" data-toggle="tab">' + TABLE_TABS[key].TAB_NAME + '</a></li>').appendTo('#issueTableTabs');
-        //$("#" + key).addClass(TABLE_TABS[key].VISIBILITY ? "active" : "hidden");
     } 
     $("#ISSUES").addClass("active");
     // event on the tabs

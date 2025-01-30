@@ -148,3 +148,43 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
 };
 
 
+service.createIssues = async (projectId, token,data) => {
+    
+    let results = {
+        created:[],
+        failed:[]
+    }
+
+    await Promise.all(
+        data.map(async (oneIssueData)=>{
+        try{
+            const resp = await issueClient.createIssue(projectId,oneIssueData,{accessToken:token});
+            results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
+        }catch(e){
+            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
+        }
+    })); 
+
+    return results;
+};
+
+service.modifyIssues = async (projectId, token,data) => {
+    
+    let results = {
+        modified:[],
+        failed:[]
+    }
+    await Promise.all(
+        data.map(async (oneIssueData)=>{        
+        try{
+            const resp = await issueClient.patchIssueDetails(projectId,oneIssueData.id,oneIssueData,{accessToken:token});
+            results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
+        }catch(e){
+            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
+        }
+    })); 
+
+    return results;
+};
+
+
