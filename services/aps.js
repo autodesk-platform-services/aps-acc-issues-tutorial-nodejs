@@ -17,6 +17,7 @@ const issueClient = new IssueClient(sdk);
 
 service.getAuthorizationUrl = () => authenticationClient.authorize(APS_CLIENT_ID, ResponseType.Code, APS_CALLBACK_URL, [
     Scopes.DataRead,
+    Scopes.DataWrite,
     Scopes.AccountRead,
     Scopes.AccountWrite
 ]);
@@ -41,6 +42,7 @@ service.authRefreshMiddleware = async (req, res, next) => {
             clientSecret: APS_CLIENT_SECRET,
             scopes: [
                 Scopes.DataRead,
+                Scopes.DataWrite,
                 Scopes.AccountRead,
                 Scopes.AccountWrite
             ]
@@ -155,10 +157,17 @@ service.createIssues = async (projectId, token,data) => {
         failed:[]
     }
 
+    //remove id field from the payload.
+    var data = data.map(obj => {
+        const { ['id']: removed, ...rest } = obj;
+        return rest;
+    });
     await Promise.all(
         data.map(async (oneIssueData)=>{
         try{
-            const resp = await issueClient.createIssue(projectId,oneIssueData,{accessToken:token});
+            //remove unsupported fields and build the payload
+            const {id, csvRowNum, ...payload } = oneIssueData;
+            const resp = await issueClient.createIssue(projectId,payload,{accessToken:token});
             results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
         }catch(e){
             results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
@@ -174,10 +183,14 @@ service.modifyIssues = async (projectId, token,data) => {
         modified:[],
         failed:[]
     }
+
     await Promise.all(
         data.map(async (oneIssueData)=>{        
         try{
-            const resp = await issueClient.patchIssueDetails(projectId,oneIssueData.id,oneIssueData,{accessToken:token});
+            const issueId=  oneIssueData.id;
+            //remove unsupported fields and build the payload
+            const {id, csvRowNum, ...payload } = oneIssueData;
+            const resp = await issueClient.patchIssueDetails(projectId,issueId,payload,{accessToken:token});
             results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
         }catch(e){
             results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
