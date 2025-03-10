@@ -78,6 +78,7 @@ service.getProjects = async (hubId, token) => {
     } )
 }; 
 
+// ACC Admin APIs
 service.getProjectUsersACC = async (projectId, token) => {
     let allUsers = [];
     let offset = 0;
@@ -90,6 +91,8 @@ service.getProjectUsersACC = async (projectId, token) => {
     }while (offset < totalResults) 
     return allUsers;    
 };
+
+// ACC Assue APIs
 
 service.getIssues = async (projectId, token) => {
     let allIssues = [];

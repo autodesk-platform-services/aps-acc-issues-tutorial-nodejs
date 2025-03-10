@@ -1,42 +1,31 @@
 const express = require('express');
 var bodyParser = require('body-parser');
 
-const { authRefreshMiddleware, 
-        getProjectsACC, 
-        getProjectACC, 
-        getProjectUsersACC, 
-        createProjectACC, 
-        getUserProfile,
-        getIssues,
-        getIssueSubtypes,
-        getIssueRootcauses,
-        getIssueCustomAttributesDefs,
-        createIssues,
-        modifyIssues  } = require('../services/aps.js');
+const { authRefreshMiddleware, getProjectUsersACC, getIssues, getIssueSubtypes, getIssueRootcauses, getIssueCustomAttributesDefs,createIssues, modifyIssues  } = require('../services/aps.js');
 
 let router = express.Router();
 
 router.use(authRefreshMiddleware);
 
-router.get('/api/admin/projects', async function(req, res, next){
-    try {
-        const projects = await getProjectsACC( req.query.accountId, req.oAuthToken.access_token);
-        res.json(projects);
-    } catch (err) {
-        next(err);
-    }
-});
+// router.get('/api/admin/projects', async function(req, res, next){
+//     try {
+//         const projects = await getProjectsACC( req.query.accountId, req.oAuthToken.access_token);
+//         res.json(projects);
+//     } catch (err) {
+//         next(err);
+//     }
+// });
 
-router.get('/api/admin/project', async function(req, res, next){
-    let projectsList = [];
-    try {
-        const projectInfo = await getProjectACC( req.query.projectId, req.oAuthToken.access_token);
-        projectsList.push(projectInfo);
-        res.json(projectsList);
-    } catch (err) {
-        next(err);
-    }
-});
+// router.get('/api/admin/project', async function(req, res, next){
+//     let projectsList = [];
+//     try {
+//         const projectInfo = await getProjectACC( req.query.projectId, req.oAuthToken.access_token);
+//         projectsList.push(projectInfo);
+//         res.json(projectsList);
+//     } catch (err) {
+//         next(err);
+//     }
+// });
  
 
 router.get('/api/admin/projectUsers', async function (req, res, next) {

@@ -1,0 +1,4 @@
+id,rootCauseId,title,description,issueSubtypeId,status,assignedTo,assignedToType,dueDate,startDate,published
+75cf6967-605f-4ec8-bb0c-48323515cbec,80a060d3-4647-4352-bd1d-ca93ff4985bc,Created  Issue Import v1,Newly Created Issue Import v2,5f70307b-0c05-50bf-946b-c1f8532fbcd9,open,EVDVKLRP39NX,user,2025-03-10,2025-11-08,TRUE
+16f9f025-621f-428b-b7f1-97e5433a8836,80a060d3-4647-4352-bd1d-ca93ff4985bc,Interior Design v4,update via import take 4,5f70307b-0c05-50bf-946b-c1f8532fbcd9,closed,EVDVKLRP39NX,user,2025-03-10,2025-11-08,TRUE
+,80a060d3-4647-4352-bd1d-ca93ff4985bc,New issue,New issue,5f70307b-0c05-50bf-946b-c1f8532fbcd9,open,EVDVKLRP39NX,user,2025-03-10,2025-11-08,TRUE

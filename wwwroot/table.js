@@ -84,9 +84,6 @@ class Table {
         }
     }
 
-
-
-
     drawTable = () => {
         if (this.#dataSet == null || this.#dataSet.length == 0) {
             console.warn('DataSet is not ready, please fetch your data first.');
@@ -227,9 +224,13 @@ class Table {
                         }
                         $("#loadingoverlay").fadeIn()
                         const rows = e.target.result.replace(/\r\n/g, '\n').split('\n'); // First replace \r\n with \n, then split by \n
+
+                        console.log("lets see how many rows", rows);
+
                         const keys = rows[0].split(',');
                         const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
                         let requestDataList = []; 
+
                        
                         for(let i=1;i<rows.length;i++){
                             // Split each row by commas to get each cell
@@ -294,32 +295,7 @@ class Table {
 
 export async function refreshTable(accountId = null, projectId = null) {
     $("#loadingoverlay").fadeIn()
-    // if( TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME=='hub' && projectId ){
-    //     for (let key in TABLE_TABS) {
-    //         if( TABLE_TABS[key].CATEGORY_NAME == 'hub' ){
-    //             $("#" + key).addClass("hidden");
-    //             $("#" + key).removeClass("active");
-    //         }
-    //         else{
-    //             if( TABLE_TABS[key].CATEGORY_DEFAULT )
-    //                 $("#" + key).addClass("active");
-    //             $("#" + key).removeClass("hidden");
-    //         }
-    //     } 
-    // }
-    // if (TABLE_TABS[g_accDataTable.tabKey].CATEGORY_NAME == 'project' && !projectId) {
-    //     for (let key in TABLE_TABS) {
-    //         if (TABLE_TABS[key].CATEGORY_NAME == 'hub') {
-    //             $("#" + key).removeClass("hidden");
-    //             if (TABLE_TABS[key].CATEGORY_DEFAULT)
-    //                 $("#" + key).addClass("active");
-    //         }
-    //         else {
-    //             $("#" + key).addClass("hidden");
-    //             $("#" + key).removeClass("active");
-    //         }
-    //     }
-    // }
+
     const activeTab = $("ul#issueTableTabs li.active")[0].id;
     try {
         await g_accDataTable.resetData(activeTab, accountId, projectId);
