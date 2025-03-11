@@ -17,31 +17,11 @@ const { authRefreshMiddleware,
 let router = express.Router();
 
 router.use(authRefreshMiddleware);
-
-router.get('/api/admin/projects', async function(req, res, next){
-    try {
-        const projects = await getProjectsACC( req.query.accountId, req.oAuthToken.access_token);
-        res.json(projects);
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.get('/api/admin/project', async function(req, res, next){
-    let projectsList = [];
-    try {
-        const projectInfo = await getProjectACC( req.query.projectId, req.oAuthToken.access_token);
-        projectsList.push(projectInfo);
-        res.json(projectsList);
-    } catch (err) {
-        next(err);
-    }
-});
  
 
 router.get('/api/admin/projectUsers', async function (req, res, next) {
     try {
-        const users = await getProjectUsersACC(req.query.projectId, req.oAuthToken.access_token);
+        const users = await getProjectUsersACC(req.query.projectId, req.internalOAuthToken.access_token);
         res.json(users);
     } catch (err) {
         next(err);
@@ -50,7 +30,7 @@ router.get('/api/admin/projectUsers', async function (req, res, next) {
 
 router.get('/api/issues/issues', async function(req, res, next){
     try {
-        const issues = await getIssues(req.query.projectId,req.oAuthToken.access_token);
+        const issues = await getIssues(req.query.projectId,req.internalOAuthToken.access_token);
         res.json(issues);
     } catch (err) {
         next(err);
@@ -60,13 +40,12 @@ router.get('/api/issues/issues', async function(req, res, next){
 router.post('/api/issues/issues', bodyParser.json(), async function (req, res, next) {
     //create new issue or modify issue
     const projectId = req.body.projectId;
-    const issues = req.body.data;
-    const newIssues =  issues.filter(i=>i.id=='' || i.id ==null || i.id==undefined)
+    const newIssues =  req.body.data.filter(i=>i.id=='' || i.id ==null || i.id==undefined)
     const oldIssues =  req.body.data.filter(i=>i.id!='' && i.id !=null && i.id!=undefined)
  
     try {
-        const newIssueResults = await createIssues(projectId,req.oAuthToken.access_token,newIssues);
-        const oldIssueResults = await modifyIssues(projectId,req.oAuthToken.access_token,oldIssues);
+        const newIssueResults = await createIssues(projectId,req.internalOAuthToken.access_token,newIssues);
+        const oldIssueResults = await modifyIssues(projectId,req.internalOAuthToken.access_token,oldIssues);
 
         const results = Object.assign({}, newIssueResults, oldIssueResults);
         res.json(results);
@@ -80,7 +59,7 @@ router.post('/api/issues/issues', bodyParser.json(), async function (req, res, n
 
 router.get('/api/issues/subtypes', async function(req, res, next){
     try {
-        const subTypes = await getIssueSubtypes(req.query.projectId,req.oAuthToken.access_token);
+        const subTypes = await getIssueSubtypes(req.query.projectId,req.internalOAuthToken.access_token);
         res.json(subTypes);
     } catch (err) {
         next(err);
@@ -89,7 +68,7 @@ router.get('/api/issues/subtypes', async function(req, res, next){
 
 router.get('/api/issues/rootcauses', async function(req, res, next){
     try {
-        const rootcauses = await getIssueRootcauses(req.query.projectId,req.oAuthToken.access_token);
+        const rootcauses = await getIssueRootcauses(req.query.projectId,req.internalOAuthToken.access_token);
         res.json(rootcauses);
     } catch (err) {
         next(err);
@@ -98,7 +77,7 @@ router.get('/api/issues/rootcauses', async function(req, res, next){
 
 router.get('/api/issues/customAttDefs', async function(req, res, next){
     try {
-        const customAttributes = await getIssueCustomAttributesDefs(req.query.projectId,req.oAuthToken.access_token);
+        const customAttributes = await getIssueCustomAttributesDefs(req.query.projectId,req.internalOAuthToken.access_token);
         res.json(customAttributes);
     } catch (err) {
         next(err);

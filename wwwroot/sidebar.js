@@ -14,12 +14,12 @@ function createTreeNode(id, text, icon, children = false) {
 
 async function getHubs() {
     const hubs = await getJSON('/api/hubs');
-    return hubs.map(hub => createTreeNode(`hub|${hub.id}`, hub.attributes.name, 'icon-hub', true));
+    return hubs.map(hub => createTreeNode(`hub|${hub.id}`, hub.name, 'icon-hub', true));
 }
 
 async function getProjects(hubId) {
     const projects = await getJSON(`/api/hubs/${hubId}/projects`);
-    return projects.map(project => createTreeNode(`project|${hubId}|${project.id}`, project.attributes.name, 'icon-project', false));
+    return projects.map(project => createTreeNode(`project|${hubId}|${project.id}`, project.name, 'icon-project', false));
 }
 
 

@@ -80,6 +80,7 @@ class Table {
             this.#dataSet = response.data;
         } catch (err) {
             console.error(err);
+            this.#dataSet =[];
             return;
         }
     }
@@ -88,10 +89,15 @@ class Table {
 
 
     drawTable = () => {
-        if (this.#dataSet == null || this.#dataSet.length == 0) {
-            console.warn('DataSet is not ready, please fetch your data first.');
-            return;
-        }
+
+        //we should allow the dataset is empty or null when 
+        // 1. no issues records at all
+        // 2. issue module is not activated 
+        // 3. this user has no access to Issue
+        // if (this.#dataSet == null || this.#dataSet.length == 0) {
+        //     console.warn('DataSet is not ready, please fetch your data first.');
+        //     return;
+        // }
 
         let columns = [];
         for (var key in this.#dataSet[0]) {
