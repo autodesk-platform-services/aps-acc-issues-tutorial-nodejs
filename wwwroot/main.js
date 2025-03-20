@@ -17,7 +17,7 @@ try {
                 document.body.removeChild(iframe);
             };
         }
-        initTree('#tree', (accountId, projectId) => refreshTable(accountId,projectId.replace('b.','')));
+        initTree('#tree', (accountId, projectId) => refreshTable(accountId.replace('b.',''),projectId.replace('b.','')));
         await initTableTabs();
     } else {
         login.innerText = 'Login';

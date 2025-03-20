@@ -21,7 +21,7 @@ const TABLE_TABS = {
         'REQUEST_URL': '/api/admin/projectUsers',
         'TAB_NAME': 'USERS',
         'VISIBILITY': false
-    },
+    }, 
     'ISSUE_SUBTYPES': {
         'REQUEST_URL': '/api/issues/subtypes',
         'TAB_NAME': 'SUBTYPES',
@@ -35,6 +35,11 @@ const TABLE_TABS = {
     'ISSUE_CUSTOM_ATTRIBUTES_DEFS': {
         'REQUEST_URL': '/api/issues/customAttDefs',
         'TAB_NAME': 'CUSTOM_ATTRIBUTES_DEFS',
+        'VISIBILITY': false
+    },
+    'USER_PROFILES': {
+        'REQUEST_URL': '/api/issues/issueUserProfile',
+        'TAB_NAME': 'USER_PROFILES',
         'VISIBILITY': false
     }
 }
