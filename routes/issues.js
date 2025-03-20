@@ -18,7 +18,6 @@ let router = express.Router();
 
 router.use(authRefreshMiddleware);
  
-
 router.get('/api/admin/projectUsers', async function (req, res, next) {
     try {
         const users = await getProjectUsersACC(req.query.projectId, req.internalOAuthToken.access_token);
@@ -56,7 +55,6 @@ router.post('/api/issues/issues', bodyParser.json(), async function (req, res, n
 
 });
  
-
 router.get('/api/issues/subtypes', async function(req, res, next){
     try {
         const subTypes = await getIssueSubtypes(req.query.projectId,req.internalOAuthToken.access_token);

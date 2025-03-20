@@ -80,7 +80,6 @@ service.getProjects = async (hubId, accessToken) => {
     return resp.data;
 };
 
-
 // ACC Admin APIs
 service.getProjectUsersACC = async (projectId, token) => {
     let allUsers = [];
@@ -146,7 +145,6 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
     let offset = 0;
     let totalResults = 0;
     do{
-    
         const resp = await issueClient.getAttributeDefinitions(projectId, {accessToken:token,offset:offset});
         allCustomAttributesDefs = allCustomAttributesDefs.concat( resp.results);
         offset += resp.pagination.limit;

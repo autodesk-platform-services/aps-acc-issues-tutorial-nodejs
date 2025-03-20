@@ -152,7 +152,7 @@ class Table {
             showToggle: false,
             pagination: true,
             pageList: [5],
-            pageSize: 5,
+            pageSize: 7,
             pageNumber: 1,
             uniqueId: 'id',
             striped: true,
@@ -231,13 +231,10 @@ class Table {
                         $("#loadingoverlay").fadeIn()
                         const rows = e.target.result.replace(/\r\n/g, '\n').split('\n'); // First replace \r\n with \n, then split by \n
 
-                        console.log("lets see how many rows", rows);
-
                         const keys = rows[0].split(',');
                         const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
                         let requestDataList = []; 
 
-                       
                         for(let i=1;i<rows.length;i++){
                             // Split each row by commas to get each cell
                             const cells = rows[i].split(',');
