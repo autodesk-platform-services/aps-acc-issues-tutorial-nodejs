@@ -1,8 +1,8 @@
 const { SdkManagerBuilder } = require('@aps_sdk/autodesk-sdkmanager');
 const { AuthenticationClient, Scopes, ResponseType } = require('@aps_sdk/authentication');
 const { DataManagementClient } = require('@aps_sdk/data-management');
-const { AdminClient } = require('@aps_sdk/construction-account-admin');
 const { IssueClient } = require('@aps_sdk/construction-issues');
+const { AdminClient } = require('@aps_sdk/construction-account-admin');
 
 const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, INTERNAL_TOKEN_SCOPES, PUBLIC_TOKEN_SCOPES } = require('../config.js');
 
@@ -11,8 +11,8 @@ const service = module.exports = {};
 const sdk = SdkManagerBuilder.create().build();
 const authenticationClient = new AuthenticationClient(sdk);
 const dataManagementClient = new DataManagementClient(sdk);
-const adminClient = new AdminClient(sdk);
 const issueClient = new IssueClient(sdk);
+const adminClient = new AdminClient(sdk);
 
 
 service.getAuthorizationUrl = () => authenticationClient.authorize(APS_CLIENT_ID, ResponseType.Code, APS_CALLBACK_URL, INTERNAL_TOKEN_SCOPES);
@@ -78,30 +78,17 @@ service.getHubs = async (accessToken) => {
 service.getProjects = async (hubId, accessToken) => {
     const resp = await dataManagementClient.getHubProjects(hubId, { accessToken });
     return resp.data;
-};
+};  
 
-// ACC Admin APIs
-service.getProjectUsersACC = async (projectId, token) => {
-    let allUsers = [];
-    let offset = 0;
-    let totalResults = 0;
-    do{
-        const resp = await adminClient.getProjectUsers( projectId, {accessToken:token,offset:offset});
-        allUsers = allUsers.concat(resp.results);
-        offset += resp.pagination.limit;
-        totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
-    return allUsers;    
-};
 
-// ACC Assue APIs
+// ACC Issues APIs 
 
-service.getIssues = async (projectId, token) => {
+//export issues list of the project
+service.getIssues = async (projectId,token) => {
     let allIssues = [];
     let offset = 0;
     let totalResults = 0;
-    do{
-    
+    do{ 
         const resp = await issueClient.getIssues(projectId, {accessToken:token,offset:offset});
         allIssues = allIssues.concat(resp.results);
         offset += resp.pagination.limit;
@@ -110,6 +97,58 @@ service.getIssues = async (projectId, token) => {
     return allIssues;
 };
 
+//import issues (create new issue or modify existing issue)
+service.createOrModifyIssues = async (projectId,token,data) => {
+    
+    let results = {
+        created:[],
+        modified:[],
+        failed:[]
+    } 
+
+    await Promise.all(
+        data.map(async (oneIssueData)=>{
+        try{
+            //remove unsupported fields and build the payload 
+            const {id, csvRowNum, ...payload } = oneIssueData;
+            if(id == '' || id==undefined || id==null){
+                //create new issue
+                const resp = await issueClient.createIssue(projectId,payload,{accessToken:token});
+                results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum}); 
+            }else{
+                 //modify an issue
+                const resp = await issueClient.patchIssueDetails(projectId,id,payload,{accessToken:token});
+                results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
+            }
+        }catch(e){
+            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
+        }
+    })); 
+
+    return results;
+};
+
+
+// ACC Admin APIs
+
+//get project users list
+service.getProjectUsers = async (projectId, token) => {
+    let allUsers = [];
+    let offset = 0;
+    let totalResults = 0;
+    do{
+        const resp = await adminClient.getProjectUsers( projectId, {accessToken:token,offset:offset});
+        
+        allUsers = allUsers.concat(resp.results);
+        offset += resp.pagination.limit;
+        totalResults = resp.pagination.totalResults;
+    }while (offset < totalResults) 
+    return allUsers;    
+}; 
+ 
+// Issue Settings
+
+//get issue sub types setting
 service.getIssueSubtypes = async (projectId, token) => {
     let allSubtypes = [];
     let offset = 0;
@@ -125,6 +164,7 @@ service.getIssueSubtypes = async (projectId, token) => {
     return allSubtypes;
 };
 
+//get issue root causes setting
 service.getIssueRootcauses = async (projectId, token) => {
     let allRootcauses = [];
     let offset = 0;
@@ -140,6 +180,7 @@ service.getIssueRootcauses = async (projectId, token) => {
     return allRootcauses;
 };
 
+//get custom attributes definitions
 service.getIssueCustomAttributesDefs = async (projectId, token) => {
     let allCustomAttributesDefs = [];
     let offset = 0;
@@ -151,56 +192,16 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
         totalResults = resp.pagination.totalResults;
     }while (offset < totalResults) 
     return allCustomAttributesDefs;
-};
+}; 
 
-
-service.createIssues = async (projectId, token,data) => {
+//get issue permissions of the user
+service.getIssueUserProfile= async (projectId, token) => {
     
-    let results = {
-        created:[],
-        failed:[]
-    } 
-    //remove id field from the payload.
-    var data = data.map(obj => {
-        const { ['id']: removed, ...rest } = obj;
-        return rest;
-    });
-    await Promise.all(
-        data.map(async (oneIssueData)=>{
-        try{
-            //remove unsupported fields and build the payload
-            const {id, csvRowNum, ...payload } = oneIssueData;
-            const resp = await issueClient.createIssue(projectId,payload,{accessToken:token});
-            results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
-        }catch(e){
-            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
-        }
-    })); 
+    const resp = await issueClient.getUserProfile(projectId, {accessToken:token});
+    return resp
+}; 
 
-    return results;
-};
 
-service.modifyIssues = async (projectId, token,data) => {
-    
-    let results = {
-        modified:[],
-        failed:[]
-    }
 
-    await Promise.all(
-        data.map(async (oneIssueData)=>{        
-        try{
-            const issueId=  oneIssueData.id;
-            //remove unsupported fields and build the payload
-            const {id, csvRowNum, ...payload } = oneIssueData;
-            const resp = await issueClient.patchIssueDetails(projectId,issueId,payload,{accessToken:token});
-            results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
-        }catch(e){
-            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
-        }
-    })); 
-
-    return results;
-};
 
 
