@@ -21,7 +21,7 @@ const TABLE_TABS = {
         'REQUEST_URL': '/api/admin/projectUsers',
         'TAB_NAME': 'USERS',
         'VISIBILITY': false
-    }, 
+    },
     'ISSUE_SUBTYPES': {
         'REQUEST_URL': '/api/issues/subtypes',
         'TAB_NAME': 'SUBTYPES',
@@ -35,11 +35,6 @@ const TABLE_TABS = {
     'ISSUE_CUSTOM_ATTRIBUTES_DEFS': {
         'REQUEST_URL': '/api/issues/customAttDefs',
         'TAB_NAME': 'CUSTOM_ATTRIBUTES_DEFS',
-        'VISIBILITY': false
-    },
-    'USER_PROFILES': {
-        'REQUEST_URL': '/api/issues/issueUserProfile',
-        'TAB_NAME': 'USER_PROFILES',
         'VISIBILITY': false
     }
 }
@@ -76,30 +71,33 @@ class Table {
         this.#accountId = accountId ? accountId : this.#accountId;
         this.#projectId = accountId || projectId ? projectId : this.#projectId;
         const url = TABLE_TABS[this.#tabKey].REQUEST_URL;
+
+
+
         const data = {
             'accountId': this.#accountId,
             'projectId': this.#projectId
         }
         try {
+
             const response = await axios.get(url, { params: data });
             this.#dataSet = response.data;
         } catch (err) {
             console.error(err);
-            this.#dataSet =[];
             return;
         }
     }
 
-    drawTable = () => {
 
-        //we should allow the dataset is empty or null when 
-        // 1. no issues records at all
-        // 2. issue module is not activated 
-        // 3. this user has no access to Issue
-        // if (this.#dataSet == null || this.#dataSet.length == 0) {
-        //     console.warn('DataSet is not ready, please fetch your data first.');
-        //     return;
-        // }
+
+
+    drawTable = () => {
+        // the dataset can be empty or null when 
+        // 1. no records at all
+        // 2. issue module is not activated with the user
+        // 3. this user has no access to the data
+        // 4. exceptions/errors
+
 
         let columns = [];
         for (var key in this.#dataSet[0]) {
@@ -166,8 +164,8 @@ class Table {
             minimumCountColumns: 2,
             smartDisplay: true,
             columns: columns,
-            sortName:'displayId',
-            sortOrder:'desc'
+            sortName: 'displayId',
+            sortOrder: 'desc'
         });
     }
 
@@ -188,6 +186,8 @@ class Table {
                             value = '<Complicated Object>';
                         } else if (Array.isArray(value)) {
                             value = '<Complicated Object>';
+                        } else {
+                            value = value.toString();
                         }
                     }
                     return `"${String(value).replace(/"/g, '""')}"`
@@ -202,23 +202,23 @@ class Table {
         link.href = URL.createObjectURL(blob);
         link.download = this.#tabKey + (new Date()).getTime() + '.csv';
         link.click();
-    } 
- 
+    }
+
     formatDate(date, format = 'YYYY-MM-DD') {
         const pad = (num) => String(num).padStart(2, '0');
-      
+
         const replacements = {
-          YYYY: date.getFullYear(),
-          MM: pad(date.getMonth() + 1),
-          DD: pad(date.getDate()) 
+            YYYY: date.getFullYear(),
+            MM: pad(date.getMonth() + 1),
+            DD: pad(date.getDate())
         };
-      
+
         return format.replace(/YYYY|MM|DD/g, (match) => replacements[match]);
-      }
+    }
 
     importFromCSV = async () => {
         if (TABLE_TABS[this.#tabKey].TAB_NAME != 'ISSUES') {
-            alert('only issue is supported to be created/modified!Please active ISSUES table firstly!');
+            alert('only issue is supported to be created/modified!Please activate ISSUES table first!');
             return;
         }
         let input = document.createElement('input');
@@ -235,30 +235,34 @@ class Table {
                         }
                         $("#loadingoverlay").fadeIn()
                         const rows = e.target.result.replace(/\r\n/g, '\n').split('\n'); // First replace \r\n with \n, then split by \n
+<<<<<<< HEAD
 
+=======
+>>>>>>> 55bc61a363712489dd46193de6c36a28c7250e60
                         const keys = rows[0].split(',');
                         const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
-                        let requestDataList = []; 
+                        let requestDataList = [];
 
                         for(let i=1;i<rows.length-1;i++){
                             // Split each row by commas to get each cell
                             const cells = rows[i].split(',');
                             let jsonItem = {};
-                            for(let k=0;k<cells.length;k++){
-                                let value =  cells[k].replace(/^"(.*)"$/, '$1')
+                            for (let k = 0; k < cells.length; k++) {
+                                let value = cells[k].replace(/^"(.*)"$/, '$1')
                                 //only import those fields that are supported with create/modify
                                 if (import_attributes_keys.includes(keys[k]) && value != null && value != undefined) {
-                                    
+
+                                    value = value.toString();
                                     //some special fields
-                                    switch(keys[k]){
+                                    switch (keys[k]) {
                                         case 'dueDate':
                                             value = this.formatDate(new Date(value));
                                             break;
                                         case 'published':
                                             value = value.toLowerCase() === "true";
-                                            break; 
+                                            break;
                                     }
-  
+
                                     jsonItem[keys[k]] = value;
                                 }
                             }
@@ -268,16 +272,21 @@ class Table {
 
                             requestDataList.push(jsonItem);
                         }
-                       
+
 
                         const data = {
-                            'accountId': this.#accountId,
-                            'projectId': this.#projectId,
+                            'accountId': this.#accountId, //this.#accountId,
+                            'projectId': this.#projectId, //this.#projectId,
                             'data': requestDataList
                         }
+
                         const url = TABLE_TABS[this.#tabKey].REQUEST_URL;
                         try {
-                            const resp = await axios.post(url, data);
+                            const resp = await axios.post(url, data, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
                             resp.data.created && resp.data.created.forEach(item => console.log(`The row ${item.csvRowNum} is created with issue id ${item.id} `));
                             resp.data.modified && resp.data.modified.forEach(item => console.log(`The row ${item.csvRowNum} is modified with issue id ${item.id} `));
                             resp.data.failed && resp.data.failed.forEach(item => console.log(`The row ${item.csvRowNum} failed to be created/modified for the reason: ${item.reason} `));
