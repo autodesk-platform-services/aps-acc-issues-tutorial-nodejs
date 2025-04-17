@@ -235,10 +235,6 @@ class Table {
                         }
                         $("#loadingoverlay").fadeIn()
                         const rows = e.target.result.replace(/\r\n/g, '\n').split('\n'); // First replace \r\n with \n, then split by \n
-<<<<<<< HEAD
-
-=======
->>>>>>> 55bc61a363712489dd46193de6c36a28c7250e60
                         const keys = rows[0].split(',');
                         const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
                         let requestDataList = [];
