@@ -88,12 +88,10 @@ SERVER_SESSION_SECRET="<secret-phrase>" # phrase used to encrypt/decrypt server 
     > the status of created/modified/failed are tracked and will be printed out in the browser console after the process. 
 
 ## Limitations
- - not all supported fields of creating issue or modifying issues are demoed
- - to read value of csv, each cell is parsed by comma (,) but if the value itself contains comma, it would cause problem. So you may need to design the code more deliberately with your requirement. 
- - values of complicated objects are not saved to csv. you could simplify the object to individual values for working with csv.
- - the info of the logged user is not shown up. you could use GET: User/Me to fetch it
- - rate limit
- 
+ - document issues (pushpin issue) is not demoed in this version
+ - The sample doesn't cover all the supported fields for creating or updating issues.
+ - values that are complex objects (such as arrays or JSON objects) are not saved to the CSV file. Th value is marked as _Complicated Objects_
+   
 ## Troubleshooting
 
 Please contact us via https://aps.autodesk.com/en/support/get-help.
@@ -102,3 +100,6 @@ Please contact us via https://aps.autodesk.com/en/support/get-help.
 
 This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 Please see the [LICENSE](LICENSE) file for more details.
+
+## Change Log
+- April 18, 2025: First version
