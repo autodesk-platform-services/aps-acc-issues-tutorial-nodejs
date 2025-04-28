@@ -1,7 +1,7 @@
 const { SdkManagerBuilder } = require('@aps_sdk/autodesk-sdkmanager');
 const { AuthenticationClient, Scopes, ResponseType } = require('@aps_sdk/authentication');
 const { DataManagementClient } = require('@aps_sdk/data-management');
-const { IssueClient } = require('@aps_sdk/construction-issues');
+const { IssuesClient } = require('@aps_sdk/construction-issues');
 const { AdminClient } = require('@aps_sdk/construction-account-admin');
 
 const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, INTERNAL_TOKEN_SCOPES, PUBLIC_TOKEN_SCOPES } = require('../config.js');
@@ -11,7 +11,7 @@ const service = module.exports = {};
 const sdk = SdkManagerBuilder.create().build();
 const authenticationClient = new AuthenticationClient(sdk);
 const dataManagementClient = new DataManagementClient(sdk);
-const issueClient = new IssueClient(sdk);
+const issuesClient = new IssuesClient(sdk);
 const adminClient = new AdminClient(sdk);
 
 
@@ -89,7 +89,7 @@ service.getIssues = async (projectId,token) => {
     let offset = 0;
     let totalResults = 0;
     do{ 
-        const resp = await issueClient.getIssues(projectId, {accessToken:token,offset:offset});
+        const resp = await issuesClient.getIssues(projectId, {accessToken:token,offset:offset});
         allIssues = allIssues.concat(resp.results);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
@@ -113,11 +113,11 @@ service.createOrModifyIssues = async (projectId,token,data) => {
             const {id, csvRowNum, ...payload } = oneIssueData;
             if(id == '' || id==undefined || id==null){
                 //create new issue
-                const resp = await issueClient.createIssue(projectId,payload,{accessToken:token});
+                const resp = await issuesClient.createIssue(projectId,payload,{accessToken:token});
                 results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum}); 
             }else{
                  //modify an issue
-                const resp = await issueClient.patchIssueDetails(projectId,id,payload,{accessToken:token});
+                const resp = await issuesClient.patchIssueDetails(projectId,id,payload,{accessToken:token});
                 results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
             }
         }catch(e){
@@ -155,7 +155,7 @@ service.getIssueSubtypes = async (projectId, token) => {
     let totalResults = 0;
     do{
     
-        const resp = await issueClient.getIssuesTypes(projectId, {accessToken:token,include:'subtypes',offset:offset});
+        const resp = await issuesClient.getIssuesTypes(projectId, {accessToken:token,include:'subtypes',offset:offset});
         let eachPage = resp.results.flatMap(item => item.subtypes);
         allSubtypes = allSubtypes.concat(eachPage);
         offset += resp.pagination.limit;
@@ -171,7 +171,7 @@ service.getIssueRootcauses = async (projectId, token) => {
     let totalResults = 0;
     do{
     
-        const resp = await issueClient.getRootCauseCategories(projectId, {accessToken:token,include:'rootcauses',offset:offset});
+        const resp = await issuesClient.getRootCauseCategories(projectId, {accessToken:token,include:'rootcauses',offset:offset});
         let eachPage = resp.results.flatMap(item => item.rootCauses);
         allRootcauses = allRootcauses.concat(eachPage);
         offset += resp.pagination.limit;
@@ -186,7 +186,7 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
     let offset = 0;
     let totalResults = 0;
     do{
-        const resp = await issueClient.getAttributeDefinitions(projectId, {accessToken:token,offset:offset});
+        const resp = await issuesClient.getAttributeDefinitions(projectId, {accessToken:token,offset:offset});
         allCustomAttributesDefs = allCustomAttributesDefs.concat( resp.results);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
@@ -197,7 +197,7 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
 //get issue permissions of the user
 service.getIssueUserProfile= async (projectId, token) => {
     
-    const resp = await issueClient.getUserProfile(projectId, {accessToken:token});
+    const resp = await issuesClient.getUserProfile(projectId, {accessToken:token});
     return resp
 }; 
 
