@@ -36,6 +36,11 @@ const TABLE_TABS = {
         'REQUEST_URL': '/api/issues/customAttDefs',
         'TAB_NAME': 'CUSTOM_ATTRIBUTES_DEFS',
         'VISIBILITY': false
+    },
+    'ISSUE_USER_PROFILE': {
+        'REQUEST_URL': '/api/issues/issueUserProfile',
+        'TAB_NAME': 'USER_PROFILE',
+        'VISIBILITY': false
     }
 }
 
@@ -86,9 +91,7 @@ class Table {
             console.error(err);
             return;
         }
-    }
-
-
+    } 
 
 
     drawTable = () => {
@@ -107,8 +110,8 @@ class Table {
                 columns.push({
                     field: key,
                     title: key,
-                    align: "center",
-                    formatter: function (value) {
+                    align: "left",
+                    formatter: (value) => {
                         return value.toString();
                     }
                 })
@@ -118,9 +121,15 @@ class Table {
                 columns.push({
                     field: key,
                     title: key,
-                    align: "center",
-                    formatter: function (value) {
-                        return JSON.stringify(value)
+                    align: "left", 
+                    formatter: (value) => {
+
+                        const jsonString = JSON.stringify(value, null, 2);
+
+                        return `<pre style="max-height: 120px; 
+                                max-width: 500px; overflow: auto; 
+                                white-space: pre-wrap;  margin: 0;word-break: break-word;">
+                                ${this.escapeHtml(jsonString)}</pre>`;
                     }
                 })
             } else {
@@ -165,7 +174,8 @@ class Table {
             smartDisplay: true,
             columns: columns,
             sortName: 'displayId',
-            sortOrder: 'desc'
+            sortOrder: 'desc',
+            resizable: true
         });
     }
 
@@ -204,18 +214,6 @@ class Table {
         link.click();
     }
 
-    formatDate(date, format = 'YYYY-MM-DD') {
-        const pad = (num) => String(num).padStart(2, '0');
-
-        const replacements = {
-            YYYY: date.getFullYear(),
-            MM: pad(date.getMonth() + 1),
-            DD: pad(date.getDate())
-        };
-
-        return format.replace(/YYYY|MM|DD/g, (match) => replacements[match]);
-    }
-
     importFromCSV = async () => {
         if (TABLE_TABS[this.#tabKey].TAB_NAME != 'ISSUES') {
             alert('only issue is supported to be created/modified!Please activate ISSUES table first!');
@@ -239,7 +237,7 @@ class Table {
                         const import_attributes_keys = TABLE_TABS[this.#tabKey].IMPORT_ATTRIBUTES_KEYS;
                         let requestDataList = [];
 
-                        for(let i=1;i<rows.length-1;i++){
+                        for (let i = 1; i < rows.length; i++) {
                             // Split each row by commas to get each cell
                             const cells = rows[i].split(',');
                             let jsonItem = {};
@@ -303,6 +301,27 @@ class Table {
             }
         };
         input.click();
+    }
+
+    formatDate(date, format = 'YYYY-MM-DD') {
+        const pad = (num) => String(num).padStart(2, '0');
+
+        const replacements = {
+            YYYY: date.getFullYear(),
+            MM: pad(date.getMonth() + 1),
+            DD: pad(date.getDate())
+        };
+
+        return format.replace(/YYYY|MM|DD/g, (match) => replacements[match]);
+    }
+
+    escapeHtml(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
     }
 }
 
