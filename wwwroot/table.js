@@ -129,7 +129,7 @@ class Table {
                         return `<pre style="max-height: 120px; 
                                 max-width: 500px; overflow: auto; 
                                 white-space: pre-wrap;  margin: 0;word-break: break-word;">
-                                ${this.escapeHtml(jsonString)}</pre>`;
+                                ${jsonString}</pre>`;
                     }
                 })
             } else {
@@ -174,9 +174,10 @@ class Table {
             smartDisplay: true,
             columns: columns,
             sortName: 'displayId',
-            sortOrder: 'desc',
-            resizable: true
-        });
+            sortOrder: 'desc', 
+            sortable: true
+        }); 
+
     }
 
 
@@ -313,16 +314,7 @@ class Table {
         };
 
         return format.replace(/YYYY|MM|DD/g, (match) => replacements[match]);
-    }
-
-    escapeHtml(str) {
-        return str
-            .replace(/&/g, "&amp;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-    }
+    }  
 }
 
 export async function refreshTable(accountId = null, projectId = null) {

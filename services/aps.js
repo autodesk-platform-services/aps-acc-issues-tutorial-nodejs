@@ -4,7 +4,7 @@ const { DataManagementClient } = require('@aps_sdk/data-management');
 const { IssuesClient } = require('@aps_sdk/construction-issues');
 const { AdminClient } = require('@aps_sdk/construction-account-admin');
 
-const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, INTERNAL_TOKEN_SCOPES, PUBLIC_TOKEN_SCOPES } = require('../config.js');
+const { APS_CLIENT_ID, APS_CLIENT_SECRET, APS_CALLBACK_URL, INTERNAL_TOKEN_SCOPES } = require('../config.js');
 
 const service = module.exports = {};
 
@@ -21,13 +21,9 @@ service.authCallbackMiddleware = async (req, res, next) => {
     const internalCredentials = await authenticationClient.getThreeLeggedToken(APS_CLIENT_ID, req.query.code, APS_CALLBACK_URL, {
         clientSecret: APS_CLIENT_SECRET
     });
-    const publicCredentials = await authenticationClient.refreshToken(internalCredentials.refresh_token, APS_CLIENT_ID, {
-        clientSecret: APS_CLIENT_SECRET,
-        scopes: PUBLIC_TOKEN_SCOPES
-    });
-    req.session.public_token = publicCredentials.access_token;
+
     req.session.internal_token = internalCredentials.access_token;
-    req.session.refresh_token = publicCredentials.refresh_token;
+    req.session.refresh_token = internalCredentials.refresh_token;
     req.session.expires_at = Date.now() + internalCredentials.expires_in * 1000;
     next();
 };
@@ -44,21 +40,13 @@ service.authRefreshMiddleware = async (req, res, next) => {
             clientSecret: APS_CLIENT_SECRET,
             scopes: INTERNAL_TOKEN_SCOPES
         });
-        const publicCredentials = await authenticationClient.refreshToken(internalCredentials.refresh_token, APS_CLIENT_ID, {
-            clientSecret: APS_CLIENT_SECRET,
-            scopes: PUBLIC_TOKEN_SCOPES
-        });
-        req.session.public_token = publicCredentials.access_token;
+
         req.session.internal_token = internalCredentials.access_token;
-        req.session.refresh_token = publicCredentials.refresh_token;
+        req.session.refresh_token = internalCredentials.refresh_token;
         req.session.expires_at = Date.now() + internalCredentials.expires_in * 1000;
     }
     req.internalOAuthToken = {
         access_token: req.session.internal_token,
-        expires_in: Math.round((req.session.expires_at - Date.now()) / 1000),
-    };
-    req.publicOAuthToken = {
-        access_token: req.session.public_token,
         expires_in: Math.round((req.session.expires_at - Date.now()) / 1000),
     };
     next();
@@ -78,52 +66,57 @@ service.getHubs = async (accessToken) => {
 service.getProjects = async (hubId, accessToken) => {
     const resp = await dataManagementClient.getHubProjects(hubId, { accessToken });
     return resp.data;
-};  
+};
 
 
 // ACC Issues APIs 
 
 //export issues list of the project
-service.getIssues = async (projectId,token) => {
+service.getIssues = async (projectId, token) => {
     let allIssues = [];
     let offset = 0;
     let totalResults = 0;
-    do{ 
-        const resp = await issuesClient.getIssues(projectId, {accessToken:token,offset:offset});
+    do {
+        const resp = await issuesClient.getIssues(projectId, { accessToken: token, offset: offset });
+        console.log(`Fetched ${resp.results.length} issues from offset ${offset}`);
         allIssues = allIssues.concat(resp.results);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
+    } while (offset < totalResults)
     return allIssues;
 };
 
 //import issues (create new issue or modify existing issue)
-service.createOrModifyIssues = async (projectId,token,data) => {
-    
+service.createOrModifyIssues = async (projectId, token, data) => {
+
     let results = {
-        created:[],
-        modified:[],
-        failed:[]
-    } 
+        created: [],
+        modified: [],
+        failed: []
+    }
 
     await Promise.all(
-        data.map(async (oneIssueData)=>{
-        try{
-            //remove unsupported fields and build the payload 
-            const {id, csvRowNum, ...payload } = oneIssueData;
-            if(id == '' || id==undefined || id==null){
-                //create new issue
-                const resp = await issuesClient.createIssue(projectId,payload,{accessToken:token});
-                results.created.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum}); 
-            }else{
-                 //modify an issue
-                const resp = await issuesClient.patchIssueDetails(projectId,id,payload,{accessToken:token});
-                results.modified.push({id:resp.id,csvRowNum:oneIssueData.csvRowNum});
+        data.map(async (oneIssueData) => {
+            try {
+                //remove unsupported fields and build the payload 
+                const { id, csvRowNum, ...payload } = oneIssueData;
+                if (id == '' || id == undefined || id == null) {
+                    //create new issue
+                    const resp = await issuesClient.createIssue(projectId, payload, { accessToken: token });
+                    results.created.push({ id: resp.id, csvRowNum: oneIssueData.csvRowNum });
+                    console.log(`created issue with id ${resp.id} from csv row ${oneIssueData.csvRowNum}`);
+                } else {
+                    //modify an issue
+                    const resp = await issuesClient.patchIssueDetails(projectId, id, payload, { accessToken: token });
+                    results.modified.push({ id: resp.id, csvRowNum: oneIssueData.csvRowNum });
+                    console.log(`modified issue with id ${resp.id} from csv row ${oneIssueData.csvRowNum}`);
+                }
+
+            } catch (e) {
+                results.failed.push({ csvRowNum: oneIssueData.csvRowNum, reason: e.toString() });
+                console.log(`failed to import issue from csv row ${oneIssueData.csvRowNum} due to ${e.toString()}`);
             }
-        }catch(e){
-            results.failed.push({csvRowNum:oneIssueData.csvRowNum,reason:e.toString()}); 
-        }
-    })); 
+        }));
 
     return results;
 };
@@ -136,16 +129,16 @@ service.getProjectUsers = async (projectId, token) => {
     let allUsers = [];
     let offset = 0;
     let totalResults = 0;
-    do{
-        const resp = await adminClient.getProjectUsers( projectId, {accessToken:token,offset:offset});
-        
+    do {
+        const resp = await adminClient.getProjectUsers(projectId, { accessToken: token, offset: offset });
+        console.log(`Fetched ${resp.results.length} users from offset ${offset}`);
         allUsers = allUsers.concat(resp.results);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
-    return allUsers;    
-}; 
- 
+    } while (offset < totalResults)
+    return allUsers;
+};
+
 // Issue Settings
 
 //get issue sub types setting
@@ -153,14 +146,16 @@ service.getIssueSubtypes = async (projectId, token) => {
     let allSubtypes = [];
     let offset = 0;
     let totalResults = 0;
-    do{
-    
-        const resp = await issuesClient.getIssuesTypes(projectId, {accessToken:token,include:'subtypes',offset:offset});
+    do {
+
+        const resp = await issuesClient.getIssuesTypes(projectId, { accessToken: token, include: 'subtypes', offset: offset });
+        console.log(`Fetched ${resp.results.length} types from offset ${offset}`);
         let eachPage = resp.results.flatMap(item => item.subtypes);
+        console.log(`Fetched ${eachPage.length} sub types`);
         allSubtypes = allSubtypes.concat(eachPage);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
+    } while (offset < totalResults)
     return allSubtypes;
 };
 
@@ -169,14 +164,15 @@ service.getIssueRootcauses = async (projectId, token) => {
     let allRootcauses = [];
     let offset = 0;
     let totalResults = 0;
-    do{
-    
-        const resp = await issuesClient.getRootCauseCategories(projectId, {accessToken:token,include:'rootcauses',offset:offset});
+    do {
+        const resp = await issuesClient.getRootCauseCategories(projectId, { accessToken: token, include: 'rootcauses', offset: offset });
+        console.log(`Fetched ${resp.results.length} root cause categories from offset ${offset}`);
         let eachPage = resp.results.flatMap(item => item.rootCauses);
+        console.log(`Fetched ${eachPage.length} root causes`);
         allRootcauses = allRootcauses.concat(eachPage);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
+    } while (offset < totalResults)
     return allRootcauses;
 };
 
@@ -185,21 +181,22 @@ service.getIssueCustomAttributesDefs = async (projectId, token) => {
     let allCustomAttributesDefs = [];
     let offset = 0;
     let totalResults = 0;
-    do{
-        const resp = await issuesClient.getAttributeDefinitions(projectId, {accessToken:token,offset:offset});
-        allCustomAttributesDefs = allCustomAttributesDefs.concat( resp.results);
+    do {
+        const resp = await issuesClient.getAttributeDefinitions(projectId, { accessToken: token, offset: offset });
+        console.log(`Fetched ${resp.results.length} custom attributes definitions from offset ${offset}`);
+        allCustomAttributesDefs = allCustomAttributesDefs.concat(resp.results);
         offset += resp.pagination.limit;
         totalResults = resp.pagination.totalResults;
-    }while (offset < totalResults) 
+    } while (offset < totalResults)
     return allCustomAttributesDefs;
-}; 
+};
 
 //get issue permissions of the user
-service.getIssueUserProfile= async (projectId, token) => {
-    
-    const resp = await issuesClient.getUserProfile(projectId, {accessToken:token});
+service.getIssueUserProfile = async (projectId, token) => {
+    issuesClient
+    const resp = await issuesClient.getUserProfile(projectId, { accessToken: token });
     return resp
-}; 
+};
 
 
 
