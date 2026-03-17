@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/badge/npm-10.2.3-blue.svg)](https://www.npmjs.com/)
 [![license](https://img.shields.io/:license-mit-green.svg)](https://opensource.org/licenses/MIT)
 
-[![ Forma Issue API ](https://img.shields.io/badge/acc%20issue%20api-v1-yellowgreen)](https://forge.autodesk.com/en/docs/acc/v1/overview/field-guide/issues/)
+[![ Forma Issue API ](https://img.shields.io/badge/forma%20issue%20api-v1-yellowgreen)](https://forge.autodesk.com/en/docs/acc/v1/overview/field-guide/issues/)
 
 [Autodesk Platform Services](https://aps.autodesk.com) application built by following
 the [Forma Issue](https://tutorials.autodesk.io/tutorials/acc-issue/) tutorial
