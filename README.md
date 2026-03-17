@@ -8,7 +8,7 @@
 [![ Forma Issue API ](https://img.shields.io/badge/forma%20issue%20api-v1-yellowgreen)](https://forge.autodesk.com/en/docs/acc/v1/overview/field-guide/issues/)
 
 [Autodesk Platform Services](https://aps.autodesk.com) application built by following
-the [Forma Issue](https://tutorials.autodesk.io/tutorials/acc-issue/) tutorial
+the [Forma Issue](https://tutorials.autodesk.io/tutorials/acc-issue) tutorial
 from https://get-started.aps.autodesk.com/.
 
 ## Description
