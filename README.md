@@ -1,18 +1,18 @@
-# ACC Issue API Tutorial (Node.js)
+# Forma Issue API Tutorial (Node.js)
 
 ![platforms](https://img.shields.io/badge/platform-windows%20%7C%20osx%20%7C%20linux-lightgray.svg)
 [![node.js](https://img.shields.io/badge/Node.js-20.10-blue.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/badge/npm-10.2.3-blue.svg)](https://www.npmjs.com/)
 [![license](https://img.shields.io/:license-mit-green.svg)](https://opensource.org/licenses/MIT)
 
-[![Issue API of Autodesk Construction Cloud](https://img.shields.io/badge/acc%20issue%20api-v1-yellowgreen)](https://forge.autodesk.com/en/docs/acc/v1/overview/field-guide/issues/)
+[![Autodesk Forma Issue API ](https://img.shields.io/badge/acc%20issue%20api-v1-yellowgreen)](https://forge.autodesk.com/en/docs/acc/v1/overview/field-guide/issues/)
 
 [Autodesk Platform Services](https://aps.autodesk.com) application built by following
-the [ACC Issue](https://tutorials.autodesk.io/tutorials/acc-issue/) tutorial
+the [Forma Issue](https://tutorials.autodesk.io/tutorials/acc-issue/) tutorial
 from https://get-started.aps.autodesk.com/.
 
 ## Description
-APS application that allows the authenticated user in [Autodesk Construction Cloud](https://www.autodesk.com/products/autodesk-docs/overview) to extract project issues and issues settings: sub types, root causes, custom attribute of a 
+APS application that allows the authenticated user in [Forma for Construction](https://www.autodesk.com/products/autodesk-docs/overview) to extract project issues and issues settings: sub types, root causes, custom attribute of a 
 given ACC project. This application renders these data in a tabular view. The data can also be exported to CSV
 file easily. With the data from a CSV, the application demos the scenario that imports them to create new issues or modify the existing issues.
 
@@ -23,12 +23,12 @@ file easily. With the data from a CSV, the application demos the scenario that i
 ### Prerequisites
 
 - [APS credentials](https://aps.autodesk.com/en/docs/oauth/v2/tutorials/create-app)
-- [Autodesk Construction Cloud](https://fieldofviewblog.wordpress.com/2017/08/31/bim-360-acc-account-for-development/)
-- Provisioned access to [Autodesk Construction Cloud](https://get-started.aps.autodesk.io/#provision-access-in-other-products)
+- [Forma for Construction](https://fieldofviewblog.wordpress.com/2017/08/31/bim-360-acc-account-for-development/)
+- Provisioned access to [Autodesk Forma](https://get-started.aps.autodesk.io/#provision-access-in-other-products)
 - [Node.js](https://nodejs.org) (Long Term Support version is recommended)
 - Command-line terminal such as [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/overview)
 or [bash](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) (should already be available on your system)
-- Prepare a [Project of Autodesk Construction Cloud with Issue Module Activated](https://help.autodesk.com/view/BUILD/ENU/?guid=Issues_About). Create some demo issues manually.
+- Prepare a [Autodesk Forma Project with Issue Module Activated](https://help.autodesk.com/view/BUILD/ENU/?guid=Issues_About). Create some demo issues manually.
 > We recommend using [Visual Studio Code](https://code.visualstudio.com) which, among other benefits,
 > provides an [integrated terminal](https://code.visualstudio.com/docs/terminal/basics) as well.
 
