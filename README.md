@@ -12,7 +12,7 @@ the [Forma Issue](https://tutorials.autodesk.io/tutorials/acc-issues) tutorial
 from https://get-started.aps.autodesk.com/.
 
 ## Description
-APS application that allows the authenticated user in [Forma for Construction](https://www.autodesk.com/products/autodesk-docs/overview) to extract project issues and issues settings: sub types, root causes, custom attribute of a 
+APS application that allows the authenticated user in [Autodesk Forma](https://www.autodesk.com/products/autodesk-docs/overview) to extract project issues and issues settings: sub types, root causes, custom attribute of a 
 given a Forma project. This application renders these data in a tabular view. The data can also be exported to CSV
 file easily. With the data from a CSV, the application demos the scenario that imports them to create new issues or modify the existing issues.
 
